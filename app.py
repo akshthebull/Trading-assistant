@@ -1,85 +1,36 @@
-import streamlit as st
-import pandas as pd
-import datetime
-import random
+import streamlit as st from ai_engine import get_ai_response from price_fetcher import get_option_prices from tracker import TradeTracker from greeks_calculator import calculate_greeks from news_feed import fetch_news from charting import live_chart_with_ai
 
-# Title
-st.set_page_config(page_title="Aksh's AI Trading Assistant", layout="wide")
-st.title("Aksh's AI Trading Assistant")
-st.markdown("Your personalized stock options tracker, alerts, and AI-powered insights")
+st.set_page_config(page_title="Aksh's AI Trading Assistant", layout="wide") st.title("Aksh's AI Trading Assistant")
 
-# Sidebar
-st.sidebar.header("Navigation")
-page = st.sidebar.radio("Go to", ["Dashboard", "Options Tracker", "News", "BTST Picks", "AI Commentary"])
+Sidebar
 
-# Simulated data generators
-def get_fake_options_data():
-    return pd.DataFrame({
-        'Symbol': ['RELIANCE', 'TATASTEEL', 'ICICIBANK', 'SBIN'],
-        'Strike Price': [2500, 120, 940, 600],
-        'Type': ['CE', 'PE', 'CE', 'PE'],
-        'Premium': [45.5, 23.4, 75.2, 15.8],
-        'Delta': [0.45, -0.32, 0.52, -0.29],
-        'Theta': [-0.12, -0.09, -0.15, -0.06],
-        'Gamma': [0.02, 0.03, 0.01, 0.02],
-        'Confidence': ['High', 'Medium', 'High', 'Low']
-    })
+st.sidebar.header("Preferences") capital = st.sidebar.number_input("Capital (INR)", value=40000) confident_tag = st.sidebar.checkbox("Show Highly Confident Trades Only")
 
-def get_fake_btst():
-    return pd.DataFrame({
-        'Stock': ['TCS', 'HDFCLIFE', 'VEDL'],
-        'Buy Price': [3870, 600, 312],
-        'Target Price': [3950, 620, 325],
-        'Stop Loss': [3800, 590, 305],
-        'Volume Spike': ['Yes', 'No', 'Yes']
-    })
+Tabs
 
-def get_fake_news():
-    return [
-        "Nifty breaks resistance, eyes 23,000 mark.",
-        "RVNL gets ₹500 crore project from Indian Railways.",
-        "Bank Nifty sees highest OI build-up in 3 weeks.",
-        "AI-powered options trading gains traction in India."
-    ]
+tabs = st.tabs(["Live Dashboard", "AI Analysis", "Track Trades", "News Feed", "Live Chart Commentary"])
 
-def get_fake_ai_commentary():
-    return """
-    Price action shows a clear breakout in midcaps. Volume increasing steadily in RVNL indicates potential bullish rally.
-    Options data suggests strong CE writing around 2350 in RELIANCE. Wait for confirmation before entering.
-    """
+Live Dashboard
 
-# Dashboard
-if page == "Dashboard":
-    st.subheader("Market Snapshot")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Nifty", "22,850", "+150 (0.66%)")
-        st.metric("Sensex", "75,100", "+300 (0.40%)")
-    with col2:
-        st.metric("Bank Nifty", "48,230", "-80 (0.17%)")
-        st.metric("India VIX", "10.2", "+0.45 (4.62%)")
+with tabs[0]: st.subheader("Live Prices & Greeks") prices = get_option_prices(capital) st.dataframe(prices)
 
-    st.subheader("Top Suggestions Today")
-    st.write(get_fake_options_data())
+st.subheader("Option Greeks")
+greeks = calculate_greeks(prices)
+st.dataframe(greeks)
 
-# Options Tracker
-elif page == "Options Tracker":
-    st.subheader("Stock Options Tracker")
-    df = get_fake_options_data()
-    st.dataframe(df, use_container_width=True)
+AI Analysis
 
-# News
-elif page == "News":
-    st.subheader("Personalized Market News")
-    for news in get_fake_news():
-        st.info(news)
+with tabs[1]: st.subheader("Ask AI anything about market") user_input = st.text_input("Enter your query") if user_input: response = get_ai_response(user_input) st.write(response)
 
-# BTST
-elif page == "BTST Picks":
-    st.subheader("BTST Trade Suggestions")
-    st.write(get_fake_btst())
+Track Trades
 
-# AI Commentary
-elif page == "AI Commentary":
-    st.subheader("Live AI Commentary")
-    st.markdown(get_fake_ai_commentary())
+with tabs[2]: st.subheader("Trade Tracker") tracker = TradeTracker() tracker.show_ui(confident_tag)
+
+News Feed
+
+with tabs[3]: st.subheader("Personalized News Feed") news = fetch_news() for article in news: st.markdown(f"- {article['title']}")
+
+Live Chart Commentary
+
+with tabs[4]: st.subheader("AI Commentary on Live Chart") live_chart_with_ai()
+
