@@ -1,78 +1,75 @@
-# app.py
 import streamlit as st
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import datetime
+from datetime import datetime
 
+# App Title
 st.set_page_config(page_title="Aksh's AI Trading Assistant", layout="wide")
 
-st.title("Aksh's AI Trading Assistant")
+# Header
+st.title("Aksh's Personal AI Trading Assistant")
+st.caption("Powerful | Personalized | Real-time")
 
-# Sidebar Controls
-with st.sidebar:
-    st.header("Settings")
-    selected_index = st.selectbox("Select Index", ["NIFTY", "BANKNIFTY", "SENSEX"])
-    stock_symbol = st.text_input("Stock Symbol (e.g. INFY.NS, TCS.NS)", value="RELIANCE.NS")
-    lookback_days = st.slider("Lookback (Days)", 1, 30, 5)
-    btst = st.checkbox("Show BTST Suggestions")
+# Sidebar Navigation
+st.sidebar.title("Navigation")
+section = st.sidebar.radio("Go to", [
+    "Dashboard",
+    "Stock Options",
+    "Index Tracker",
+    "BTST Ideas",
+    "Options Tracker",
+    "Live Chart + AI Commentary",
+    "Important News",
+    "My Trade Diary",
+])
 
-# Function to fetch data
-@st.cache_data
-def get_data(ticker, days):
-    end = datetime.datetime.now()
-    start = end - datetime.timedelta(days=days)
-    data = yf.download(ticker, start=start, end=end, interval="15m")
-    return data
+# Phase 1: Dashboard (Initial layout)
+if section == "Dashboard":
+    st.subheader("Market Overview")
+    st.info("This section will show summary of Nifty, BankNifty, Sensex, top gainers/losers.")
 
-# Index Map
-index_map = {
-    "NIFTY": "^NSEI",
-    "BANKNIFTY": "^NSEBANK",
-    "SENSEX": "^BSESN"
-}
+    st.markdown("#### Example Layout")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("NIFTY 50", "22,300", "+0.45%")
+    col2.metric("BANKNIFTY", "47,820", "+0.28%")
+    col3.metric("SENSEX", "73,200", "+0.39%")
 
-index_data = get_data(index_map[selected_index], lookback_days)
-stock_data = get_data(stock_symbol, lookback_days)
+    st.success("Live AI signals, volume breakouts, and open trades will be displayed here.")
 
-# Signal Generator (basic logic)
-def generate_signals(df):
-    df['MA20'] = df['Close'].rolling(20).mean()
-    df['Signal'] = np.where(df['Close'] > df['MA20'], 'BUY', 'SELL')
-    return df
+# Phase 2: Stock Options Screener
+elif section == "Stock Options":
+    st.subheader("Stock Options Screener")
+    st.warning("Filter stock options with ideal premiums, Greeks, volume, and AI signals.")
 
-index_data = generate_signals(index_data)
-stock_data = generate_signals(stock_data)
+# Phase 3: Nifty/BankNifty Tracker
+elif section == "Index Tracker":
+    st.subheader("Nifty / BankNifty Tracker")
+    st.info("Watch real-time index data, with AI insights and SL/Target entries.")
 
-# Live AI Commentary
-st.subheader(f"Live Commentary - {selected_index}")
-latest_signal = index_data['Signal'].iloc[-1]
-latest_price = index_data['Close'].iloc[-1]
-ai_comment = f"Currently, {selected_index} is showing a **{latest_signal}** signal around **₹{latest_price:.2f}**."
+# Phase 4: BTST Ideas
+elif section == "BTST Ideas":
+    st.subheader("BTST Picks (Buy Today Sell Tomorrow)")
+    st.info("AI-suggested BTST trades based on volume, news, and momentum.")
 
-st.info(ai_comment)
+# Phase 5: Options Trade Tracker
+elif section == "Options Tracker":
+    st.subheader("Options Trade Tracker")
+    st.warning("Track Greeks (Delta, Theta, Gamma) for all open stock/index options.")
 
-# Chart
-st.line_chart(index_data[['Close', 'MA20']])
+# Phase 6: Live Chart with AI Commentary
+elif section == "Live Chart + AI Commentary":
+    st.subheader("Live Price Action + AI Thoughts")
+    st.success("Charts with real-time AI commentary will appear here.")
 
-# Stock Options Section
-st.subheader("Stock Option Tracker with Greeks (Simulated)")
-greek_sim = {
-    'Delta': round(np.random.uniform(0.4, 0.8), 2),
-    'Theta': round(np.random.uniform(-0.05, -0.01), 2),
-    'Gamma': round(np.random.uniform(0.01, 0.15), 2)
-}
-st.write(f"**Symbol**: {stock_symbol}")
-st.write(greek_sim)
+# Phase 7: Important News
+elif section == "Important News":
+    st.subheader("Important News & Announcements")
+    st.warning("Customized news based on your positions will show here.")
 
-# BTST Suggestion (if enabled)
-if btst:
-    btst_price = stock_data['Close'].iloc[-1]
-    prev_close = stock_data['Close'].iloc[-2]
-    if btst_price > prev_close:
-        st.success(f"**BTST Opportunity:** Price has increased. Consider buying {stock_symbol} today.")
-    else:
-        st.warning(f"**No BTST Opportunity:** {stock_symbol} is not showing strength.")
+# Phase 8: Trade Diary
+elif section == "My Trade Diary":
+    st.subheader("My Trade Diary & Tracker")
+    st.markdown("**Tag trades as 'High Confidence', track PnL separately.**")
+    st.info("View trade history, export to Excel, and log thoughts.")
 
 # Footer
-st.caption("Built for Aksh - Personal AI Trading Assistant")
+st.markdown("---")
+st.markdown("Built by Aksh | Powered by AI | Made for Traders")
